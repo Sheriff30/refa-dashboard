@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { UserRoleService } from './user-role.service';
 
 // Interfaces
@@ -57,7 +57,27 @@ export class AdminService {
   loginAdmin(loginData: AdminLoginRequest): Observable<AdminLoginResponse> {
     return this.http
       .post<AdminLoginResponse>(`${this.baseUrl}/admin/login`, loginData)
-      .pipe(catchError(this.handleError));
+      .pipe(
+        map((response) => {
+          // Store the access token in localStorage for future use
+          if (response.access_token) {
+            localStorage.setItem('authToken', response.access_token);
+            localStorage.setItem('token_type', response.token_type);
+            localStorage.setItem(
+              'token_expires_in',
+              response.expires_in.toString()
+            );
+          }
+
+          // Store user data in user role service if available
+          if (response.user) {
+            this.userRoleService.setUserData(response.user);
+          }
+
+          return response;
+        }),
+        catchError(this.handleError)
+      );
   }
 
   private handleError = (error: HttpErrorResponse): Observable<never> => {

@@ -94,7 +94,7 @@ export class AgentService {
         map((response) => {
           // Store the access token in localStorage for future use
           if (response.access_token) {
-            localStorage.setItem('access_token', response.access_token);
+            localStorage.setItem('authToken', response.access_token);
             localStorage.setItem('token_type', response.token_type);
             localStorage.setItem(
               'token_expires_in',
@@ -119,7 +119,7 @@ export class AgentService {
       map((response) => {
         // Store the access token in localStorage for future use
         if (response.access_token) {
-          localStorage.setItem('access_token', response.access_token);
+          localStorage.setItem('authToken', response.access_token);
           localStorage.setItem('token_type', response.token_type);
           localStorage.setItem(
             'token_expires_in',
@@ -150,12 +150,8 @@ export class AgentService {
    */
   logoutAgent(): Observable<LogoutResponse> {
     const url = `${this.baseUrl}/auth/logout`;
-    const token = this.getAccessToken();
-    const headers = token
-      ? new HttpHeaders({ Authorization: `Bearer ${token}` })
-      : undefined;
 
-    return this.http.post<LogoutResponse>(url, {}, { headers }).pipe(
+    return this.http.post<LogoutResponse>(url, {}).pipe(
       map((response) => {
         // Clear local data after successful API logout
         this.logout();
@@ -174,7 +170,7 @@ export class AgentService {
    * @returns The access token or null if not available
    */
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+    return localStorage.getItem('authToken');
   }
 
   /**
@@ -211,7 +207,7 @@ export class AgentService {
    * Clear authentication data
    */
   clearAuthData(): void {
-    localStorage.removeItem('access_token');
+    localStorage.removeItem('authToken');
     localStorage.removeItem('token_type');
     localStorage.removeItem('token_expires_in');
   }

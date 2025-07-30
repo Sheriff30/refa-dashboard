@@ -104,7 +104,7 @@ export class UserRoleService {
    */
   isAuthenticated(): boolean {
     const user = this.getCurrentUser();
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem('authToken');
     return !!(user && token);
   }
 

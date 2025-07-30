@@ -10,76 +10,95 @@
     <h3>{{ "Basic Information" | translate }}</h3>
     <div class="section-content grid-3">
       <div class="input-group">
-        <label>{{ "Property Name" | translate }}</label>
+        <label>{{ "Property Name (English)" | translate }}</label>
         <input
-          formControlName="propertyName"
+          formControlName="name_en"
           type="text"
-          placeholder="{{ 'Enter property name' | translate }}"
+          placeholder="{{ 'Enter property name in English' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('propertyName')?.errors?.['required'] && propertyForm.get('propertyName')?.touched"
+          *ngIf="propertyForm.get('name_en')?.errors?.['required'] && propertyForm.get('name_en')?.touched"
         >
-          {{ "Property name is required" | translate }}
+          {{ "Property name in English is required" | translate }}
+        </div>
+      </div>
+      <div class="input-group">
+        <label>{{ "Property Name (Arabic)" | translate }}</label>
+        <input
+          formControlName="name_ar"
+          type="text"
+          placeholder="{{ 'Enter property name in Arabic' | translate }}"
+        />
+        <div
+          *ngIf="propertyForm.get('name_ar')?.errors?.['required'] && propertyForm.get('name_ar')?.touched"
+        >
+          {{ "Property name in Arabic is required" | translate }}
         </div>
       </div>
       <div class="input-group">
         <label>{{ "Property Category" | translate }}</label>
-        <select formControlName="propertyCategory">
+        <select
+          formControlName="property_category_id"
+          (change)="onCategoryChange()"
+        >
           <option value="">{{ "Select Category" | translate }}</option>
-          <option value="residential">{{ "Residential" | translate }}</option>
-          <option value="commercial">{{ "Commercial" | translate }}</option>
+          <option
+            *ngFor="let category of availablePropertyCategories"
+            [value]="category.id"
+          >
+            {{ getCategoryName(category) }}
+          </option>
         </select>
         <div
-          *ngIf="propertyForm.get('propertyCategory')?.errors?.['required'] && propertyForm.get('propertyCategory')?.touched"
+          *ngIf="propertyForm.get('property_category_id')?.errors?.['required'] && propertyForm.get('property_category_id')?.touched"
         >
           {{ "Property category is required" | translate }}
         </div>
       </div>
       <div class="input-group">
         <label>{{ "Property Type" | translate }}</label>
-        <select formControlName="propertyType">
+        <select formControlName="property_type_id">
           <option value="">{{ "Select Type" | translate }}</option>
-          <option value="apartment">{{ "Apartment" | translate }}</option>
-          <option value="villa">{{ "Villa" | translate }}</option>
-          <option value="house">{{ "House" | translate }}</option>
-          <option value="office">{{ "Office" | translate }}</option>
+          <option *ngFor="let type of filteredPropertyTypes" [value]="type.id">
+            {{ getPropertyTypeName(type) }}
+          </option>
         </select>
         <div
-          *ngIf="propertyForm.get('propertyType')?.errors?.['required'] && propertyForm.get('propertyType')?.touched"
+          *ngIf="propertyForm.get('property_type_id')?.errors?.['required'] && propertyForm.get('property_type_id')?.touched"
         >
           {{ "Property type is required" | translate }}
         </div>
       </div>
       <div class="input-group">
-        <label>{{ "Property Size (m²)" | translate }}</label>
+        <label>{{ "Property Area (m²)" | translate }}</label>
         <input
-          formControlName="propertySize"
+          formControlName="area"
           type="number"
-          placeholder="{{ 'Enter property size' | translate }}"
+          placeholder="{{ 'Enter property area' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('propertySize')?.errors?.['required'] && propertyForm.get('propertySize')?.touched"
+          *ngIf="propertyForm.get('area')?.errors?.['required'] && propertyForm.get('area')?.touched"
         >
-          {{ "Property size is required" | translate }}
+          {{ "Property area is required" | translate }}
         </div>
       </div>
       <div class="input-group">
         <label>{{ "Available From" | translate }}</label>
         <input
-          formControlName="availableFrom"
+          formControlName="available_from"
           type="date"
           placeholder="{{ 'Select available date' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('availableFrom')?.errors?.['required'] && propertyForm.get('availableFrom')?.touched"
+          *ngIf="propertyForm.get('available_from')?.errors?.['required'] && propertyForm.get('available_from')?.touched"
         >
           {{ "Available date is required" | translate }}
         </div>
       </div>
       <div class="input-group">
-        <label>{{ "Furnishment" | translate }}</label>
-        <select formControlName="furnishment">
-          <option value="">{{ "Select Furnishment" | translate }}</option>
+        <label>{{ "Furnishing Status" | translate }}</label>
+        <select formControlName="furnishing_status">
+          <option value="">{{ "Select Furnishing Status" | translate }}</option>
           <option value="furnished">{{ "Furnished" | translate }}</option>
           <option value="unfurnished">{{ "Unfurnished" | translate }}</option>
           <option value="semi-furnished">
@@ -87,9 +106,9 @@
           </option>
         </select>
         <div
-          *ngIf="propertyForm.get('furnishment')?.errors?.['required'] && propertyForm.get('furnishment')?.touched"
+          *ngIf="propertyForm.get('furnishing_status')?.errors?.['required'] && propertyForm.get('furnishing_status')?.touched"
         >
-          {{ "Furnishment is required" | translate }}
+          {{ "Furnishing status is required" | translate }}
         </div>
       </div>
     </div>
@@ -129,12 +148,12 @@
       <div class="input-group">
         <label>{{ "Floor Number" | translate }}</label>
         <input
-          formControlName="floorNumber"
+          formControlName="floor_number"
           type="number"
           placeholder="{{ 'Enter floor number' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('floorNumber')?.errors?.['required'] && propertyForm.get('floorNumber')?.touched"
+          *ngIf="propertyForm.get('floor_number')?.errors?.['required'] && propertyForm.get('floor_number')?.touched"
         >
           {{ "Floor number is required" | translate }}
         </div>
@@ -142,52 +161,92 @@
       <div class="input-group">
         <label>{{ "Total Floors" | translate }}</label>
         <input
-          formControlName="totalFloors"
+          formControlName="total_floors"
           type="number"
           placeholder="{{ 'Enter total number of floors' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('totalFloors')?.errors?.['required'] && propertyForm.get('totalFloors')?.touched"
+          *ngIf="propertyForm.get('total_floors')?.errors?.['required'] && propertyForm.get('total_floors')?.touched"
         >
           {{ "Total floors is required" | translate }}
         </div>
       </div>
       <div class="input-group">
+        <label>{{ "Insurance Amount (SAR)" | translate }}</label>
+        <input
+          formControlName="insurance_amount"
+          type="number"
+          placeholder="{{ 'Enter insurance amount' | translate }}"
+        />
+        <div
+          *ngIf="propertyForm.get('insurance_amount')?.errors?.['required'] && propertyForm.get('insurance_amount')?.touched"
+        >
+          {{ "Insurance amount is required" | translate }}
+        </div>
+      </div>
+      <div class="input-group">
+        <label>{{ "FAL Number" | translate }}</label>
+        <input
+          formControlName="fal_number"
+          type="text"
+          placeholder="{{ 'Enter FAL number' | translate }}"
+        />
+        <div
+          *ngIf="propertyForm.get('fal_number')?.errors?.['required'] && propertyForm.get('fal_number')?.touched"
+        >
+          {{ "FAL number is required" | translate }}
+        </div>
+      </div>
+      <div class="input-group">
+        <label>{{ "Advertisement Number" | translate }}</label>
+        <input
+          formControlName="ad_number"
+          type="text"
+          placeholder="{{ 'Enter advertisement number' | translate }}"
+        />
+        <div
+          *ngIf="propertyForm.get('ad_number')?.errors?.['required'] && propertyForm.get('ad_number')?.touched"
+        >
+          {{ "Advertisement number is required" | translate }}
+        </div>
+      </div>
+      <div class="input-group">
         <label>{{ "Annual Rent (SAR)" | translate }}</label>
         <input
-          formControlName="annualRent"
+          formControlName="annual_rent"
           type="number"
           placeholder="{{ 'Enter annual rent amount' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('annualRent')?.errors?.['required'] && propertyForm.get('annualRent')?.touched"
+          *ngIf="propertyForm.get('annual_rent')?.errors?.['required'] && propertyForm.get('annual_rent')?.touched"
         >
           {{ "Annual rent is required" | translate }}
         </div>
       </div>
-      <div class="input-group">
-        <label>{{ "Deposit Amount" | translate }}</label>
-        <input
-          formControlName="depositAmount"
-          type="number"
-          placeholder="{{ 'Enter deposit amount' | translate }}"
-        />
+      <div class="input-group text-area">
+        <label>{{ "Property Description (English)" | translate }}</label>
+        <textarea
+          formControlName="description_en"
+          placeholder="{{
+            'Enter property description in English' | translate
+          }}"
+        ></textarea>
         <div
-          *ngIf="propertyForm.get('depositAmount')?.errors?.['required'] && propertyForm.get('depositAmount')?.touched"
+          *ngIf="propertyForm.get('description_en')?.errors?.['required'] && propertyForm.get('description_en')?.touched"
         >
-          {{ "Deposit amount is required" | translate }}
+          {{ "Property description in English is required" | translate }}
         </div>
       </div>
       <div class="input-group text-area">
-        <label>{{ "Property Description" | translate }}</label>
+        <label>{{ "Property Description (Arabic)" | translate }}</label>
         <textarea
-          formControlName="description"
-          placeholder="{{ 'Enter property description' | translate }}"
+          formControlName="description_ar"
+          placeholder="{{ 'Enter property description in Arabic' | translate }}"
         ></textarea>
         <div
-          *ngIf="propertyForm.get('description')?.errors?.['required'] && propertyForm.get('description')?.touched"
+          *ngIf="propertyForm.get('description_ar')?.errors?.['required'] && propertyForm.get('description_ar')?.touched"
         >
-          {{ "Property description is required" | translate }}
+          {{ "Property description in Arabic is required" | translate }}
         </div>
       </div>
     </div>
@@ -198,55 +257,66 @@
     <h3>{{ "Location Details" | translate }}</h3>
     <div class="section-content grid-2">
       <div class="input-group">
-        <label>{{ "Address Line 1" | translate }}</label>
+        <label>{{ "Building Number" | translate }}</label>
         <input
-          formControlName="addressLine1"
+          formControlName="building_number"
           type="text"
-          placeholder="{{ 'Enter address line 1' | translate }}"
+          placeholder="{{ 'Enter building number' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('addressLine1')?.errors?.['required'] && propertyForm.get('addressLine1')?.touched"
+          *ngIf="propertyForm.get('building_number')?.errors?.['required'] && propertyForm.get('building_number')?.touched"
         >
-          {{ "Address is required" | translate }}
+          {{ "Building number is required" | translate }}
         </div>
       </div>
       <div class="input-group">
-        <label>{{ "Building Name" | translate }}</label>
+        <label>{{ "Region" | translate }}</label>
         <input
-          formControlName="buildingName"
+          formControlName="region"
           type="text"
-          placeholder="{{ 'Enter building name' | translate }}"
+          placeholder="{{ 'Enter region' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('buildingName')?.errors?.['required'] && propertyForm.get('buildingName')?.touched"
+          *ngIf="propertyForm.get('region')?.errors?.['required'] && propertyForm.get('region')?.touched"
         >
-          {{ "Building name is required" | translate }}
+          {{ "Region is required" | translate }}
         </div>
       </div>
       <div class="input-group">
-        <label>{{ "Province" | translate }}</label>
-        <select formControlName="province">
-          <option value="">{{ "Select Province" | translate }}</option>
-          <option value="riyadh">{{ "Riyadh" | translate }}</option>
-          <option value="jeddah">{{ "Jeddah" | translate }}</option>
-          <option value="dammam">{{ "Dammam" | translate }}</option>
-          <!-- Add more provinces as needed -->
-        </select>
+        <label>{{ "City" | translate }}</label>
+        <input
+          formControlName="city"
+          type="text"
+          placeholder="{{ 'Enter city' | translate }}"
+        />
         <div
-          *ngIf="propertyForm.get('province')?.errors?.['required'] && propertyForm.get('province')?.touched"
+          *ngIf="propertyForm.get('city')?.errors?.['required'] && propertyForm.get('city')?.touched"
         >
-          {{ "Province is required" | translate }}
+          {{ "City is required" | translate }}
+        </div>
+      </div>
+      <div class="input-group">
+        <label>{{ "District" | translate }}</label>
+        <input
+          formControlName="district"
+          type="text"
+          placeholder="{{ 'Enter district' | translate }}"
+        />
+        <div
+          *ngIf="propertyForm.get('district')?.errors?.['required'] && propertyForm.get('district')?.touched"
+        >
+          {{ "District is required" | translate }}
         </div>
       </div>
       <div class="input-group">
         <label>{{ "Postal Code" | translate }}</label>
         <input
-          formControlName="postalCode"
+          formControlName="postal_code"
           type="text"
           placeholder="{{ 'Enter postal code' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('postalCode')?.errors?.['required'] && propertyForm.get('postalCode')?.touched"
+          *ngIf="propertyForm.get('postal_code')?.errors?.['required'] && propertyForm.get('postal_code')?.touched"
         >
           {{ "Postal code is required" | translate }}
         </div>
@@ -287,7 +357,6 @@
           <input
             #fileInput
             type="file"
-            formControlName="images"
             multiple
             accept="image/*"
             style="display: none"
@@ -319,126 +388,52 @@
     </div>
   </section>
 
-  <!-- Property Features -->
+  <!-- Property Amenities -->
   <section>
-    <h3>{{ "Property Features" | translate }}</h3>
+    <h3>{{ "Property Amenities" | translate }}</h3>
     <div class="section-content grid-5 feature-buttons">
       <label
+        *ngFor="let amenity of availableAmenities"
         class="feature-button"
-        [class.active]="propertyForm.get('parkingArea')?.value"
+        [class.active]="isAmenitySelected(amenity.id)"
       >
         <input
           type="checkbox"
-          formControlName="parkingArea"
+          [value]="amenity.id"
+          (change)="toggleAmenity(amenity)"
           class="hidden-checkbox"
         />
         <span class="button-content">
-          <img src="assets/icons/parking-icon.svg" alt="Parking area" />
-          {{ "Parking area" | translate }}
-        </span>
-      </label>
-      <label
-        class="feature-button"
-        [class.active]="propertyForm.get('medicalService')?.value"
-      >
-        <input
-          type="checkbox"
-          formControlName="medicalService"
-          class="hidden-checkbox"
-        />
-        <span class="button-content">
-          <img src="assets/icons/medical.svg" alt="Medical service" />
-          {{ "24/7 medical service" | translate }}
-        </span>
-      </label>
-      <label
-        class="feature-button"
-        [class.active]="propertyForm.get('petFriendly')?.value"
-      >
-        <input
-          type="checkbox"
-          formControlName="petFriendly"
-          class="hidden-checkbox"
-        />
-        <span class="button-content">
-          <img src="assets/icons/pet.svg" alt="Pet friendly" />
-          {{ "Pet Friendly" | translate }}
-        </span>
-      </label>
-      <label
-        class="feature-button"
-        [class.active]="propertyForm.get('liftFacility')?.value"
-      >
-        <input
-          type="checkbox"
-          formControlName="liftFacility"
-          class="hidden-checkbox"
-        />
-        <span class="button-content">
-          <img src="assets/icons/lift.svg" alt="Lift facility" />
-          {{ "Lift facility" | translate }}
-        </span>
-      </label>
-      <label
-        class="feature-button"
-        [class.active]="propertyForm.get('cctv')?.value"
-      >
-        <input type="checkbox" formControlName="cctv" class="hidden-checkbox" />
-        <span class="button-content">
-          <img src="assets/icons/cctv.svg" alt="CCTV" />
-          {{ "CCTV" | translate }}
+          <!-- <img
+            [src]="'assets/icons/' + amenity.icon + '.svg'"
+            [alt]="getAmenityName(amenity)"
+            style="width: 24px; height: 24px"
+          /> -->
+          {{ getAmenityName(amenity) }}
         </span>
       </label>
     </div>
-    <h2>{{ "Nearby Features" | translate }}</h2>
-    <div class="section-content grid-6">
-      <div class="input-group">
-        <label>{{ "Bus stop" | translate }}</label>
-        <input
-          formControlName="busStop"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
-      </div>
-      <div class="input-group">
-        <label>{{ "Hospital" | translate }}</label>
-        <input
-          formControlName="hospital"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
-      </div>
-      <div class="input-group">
-        <label>{{ "Shop" | translate }}</label>
-        <input
-          formControlName="shop"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
-      </div>
-      <div class="input-group">
-        <label>{{ "Park" | translate }}</label>
-        <input
-          formControlName="park"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
-      </div>
-      <div class="input-group">
-        <label>{{ "School" | translate }}</label>
-        <input
-          formControlName="school"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
-      </div>
-      <div class="input-group">
-        <label>{{ "Bank" | translate }}</label>
-        <input
-          formControlName="bank"
-          type="text"
-          placeholder="{{ 'Distance (KM)' | translate }}"
-        />
+
+    <!-- Selected Amenities with Distance -->
+    <div *ngIf="selectedAmenities.length > 0" class="section-content">
+      <h4>{{ "Selected Amenities" | translate }}</h4>
+      <div class="selected-amenities">
+        <div *ngFor="let amenity of selectedAmenities" class="amenity-item">
+          <span>{{ getAmenityName(amenity) }}</span>
+          <input
+            type="text"
+            [(ngModel)]="amenity.distance"
+            placeholder="{{ 'Distance (e.g., 5 min walk)' | translate }}"
+            class="distance-input"
+          />
+          <button
+            type="button"
+            (click)="removeAmenity(amenity.id)"
+            class="remove-btn"
+          >
+            ×
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -447,32 +442,6 @@
   <section>
     <h3>{{ "Legal Information" | translate }}</h3>
     <div class="section-content grid-2">
-      <div class="input-group">
-        <label>{{ "FAL License ID" | translate }}</label>
-        <input
-          formControlName="falLicenseId"
-          type="text"
-          placeholder="{{ 'Enter FAL license ID' | translate }}"
-        />
-        <div
-          *ngIf="propertyForm.get('falLicenseId')?.errors?.['required'] && propertyForm.get('falLicenseId')?.touched"
-        >
-          {{ "FAL License ID is required" | translate }}
-        </div>
-      </div>
-      <div class="input-group">
-        <label>{{ "Advertising License No" | translate }}</label>
-        <input
-          formControlName="advertisingLicenseNo"
-          type="text"
-          placeholder="{{ 'Enter advertising license number' | translate }}"
-        />
-        <div
-          *ngIf="propertyForm.get('advertisingLicenseNo')?.errors?.['required'] && propertyForm.get('advertisingLicenseNo')?.touched"
-        >
-          {{ "Advertising License No is required" | translate }}
-        </div>
-      </div>
       <div class="confirmation-checkbox">
         <label>
           <input type="checkbox" formControlName="declaration" />
@@ -490,6 +459,13 @@
       </div>
       <!-- Action Buttons -->
       <div class="action-buttons">
+        <button
+          type="button"
+          (click)="onLoadDummyData()"
+          style="background-color: #28a745; margin-right: 10px"
+        >
+          Load Dummy Data
+        </button>
         <button type="button" (click)="onCancel()">
           {{ "Cancel" | translate }}
         </button>

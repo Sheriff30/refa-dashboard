@@ -10,9 +10,11 @@ import {
   HttpClient,
   provideHttpClient,
   withInterceptorsFromDi,
+  withInterceptors,
 } from '@angular/common/http';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
+import { httpInterceptor } from '../services/http.interceptor';
 
 export function createTranslateLoader(http: HttpClient) {
   return new TranslateHttpLoader(http, './i18n/', '.json');
@@ -32,6 +34,9 @@ export const appConfig: ApplicationConfig = {
       }),
     ]),
     provideRouter(routes),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(
+      withInterceptorsFromDi(),
+      withInterceptors([httpInterceptor])
+    ),
   ],
 };
