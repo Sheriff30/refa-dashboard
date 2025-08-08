@@ -10,6 +10,25 @@ import { Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import * as L from 'leaflet';
 import { PropertiesService } from '../../../services/properties.service';
+import {
+  AmenitiesService,
+  Amenity,
+} from '../../../services/amenitites.service';
+import { LanguageService } from '../../../services/language.service';
+import {
+  PropertyTypesService,
+  PropertyType,
+  PropertyCategory,
+} from '../../../services/property-types.service';
+import {
+  CategoriesService,
+  Category,
+} from '../../../services/categories.service';
+import {
+  PropertyCreationService,
+  CreatePropertyRequest,
+  PropertyAmenity,
+} from '../../../services/property-creation.service';
 
 @Component({
   selector: 'app-property-create',
@@ -25,44 +44,56 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
   defaultLat = 24.7136; // Default latitude for Saudi Arabia
   defaultLng = 46.6753; // Default longitude for Saudi Arabia
   uploadedFiles: File[] = [];
+  amenities: Amenity[] = [];
+  propertyTypes: PropertyType[] = [];
+  propertyCategories: PropertyCategory[] = [];
+  categories: Category[] = [];
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private propertiesService: PropertiesService
+    private propertiesService: PropertiesService,
+    private amenitiesService: AmenitiesService,
+    private languageService: LanguageService,
+    private propertyTypesService: PropertyTypesService,
+    private categoriesService: CategoriesService,
+    private propertyCreationService: PropertyCreationService
   ) {
     this.propertyForm = this.fb.group({
+      // Names
       propertyName: ['', Validators.required],
+      propertyNameAr: ['', Validators.required],
+      // Category/Type
       propertyCategory: ['', Validators.required],
       propertyType: ['', Validators.required],
+      // Area & availability & furnishing
       propertySize: ['', [Validators.required, Validators.min(0)]],
       availableFrom: ['', Validators.required],
       furnishment: ['', Validators.required],
+      // Beds/Baths/Floors
       bedrooms: ['', [Validators.required, Validators.min(0)]],
       bathrooms: ['', [Validators.required, Validators.min(0)]],
       floorNumber: ['', [Validators.required, Validators.min(0)]],
       totalFloors: ['', [Validators.required, Validators.min(0)]],
+      // Pricing
       annualRent: ['', [Validators.required, Validators.min(0)]],
       depositAmount: ['', [Validators.required, Validators.min(0)]],
+      // Descriptions
       description: ['', Validators.required],
+      descriptionAr: ['', Validators.required],
+      // Address/Location
       addressLine1: ['', Validators.required],
       buildingName: ['', Validators.required],
-      province: ['', Validators.required],
+      country: ['Saudi Arabia', Validators.required],
+      region: ['', Validators.required],
+      city: ['', Validators.required],
+      district: ['', Validators.required],
       postalCode: ['', Validators.required],
       latitude: [this.defaultLat, Validators.required],
       longitude: [this.defaultLng, Validators.required],
+      // Media
       images: [''],
-      parkingArea: [false],
-      medicalService: [false],
-      petFriendly: [false],
-      liftFacility: [false],
-      cctv: [false],
-      busStop: [''],
-      hospital: [''],
-      shop: [''],
-      park: [''],
-      school: [''],
-      bank: [''],
+      // Legal
       falLicenseId: ['', Validators.required],
       advertisingLicenseNo: ['', Validators.required],
       declaration: [false, Validators.requiredTrue],
@@ -70,7 +101,63 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    // Initialize any additional data needed
+    // Load amenities, property types, and categories
+    this.loadAmenities();
+    this.loadPropertyTypes();
+    this.loadCategories();
+  }
+
+  private loadAmenities(): void {
+    this.amenitiesService.getAmenities().subscribe({
+      next: (amenities: Amenity[]) => {
+        this.amenities = amenities;
+        this.setupAmenitiesForm();
+
+        // Also log active amenities
+        this.amenitiesService.getActiveAmenities().subscribe({
+          next: (activeAmenities) => {},
+          error: (error) => {
+            console.error('Error loading active amenities:', error);
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error loading amenities:', error);
+      },
+    });
+  }
+
+  private setupAmenitiesForm(): void {
+    // Add form controls for each amenity
+    this.amenities.forEach((amenity) => {
+      this.propertyForm.addControl(
+        `amenity_${amenity.id}`,
+        this.fb.control(false)
+      );
+    });
+  }
+
+  private loadPropertyTypes(): void {
+    this.propertyTypesService.getPropertyTypes().subscribe({
+      next: (propertyTypes: PropertyType[]) => {
+        this.propertyTypes = propertyTypes;
+      },
+      error: (error) => {
+        console.error('Error loading property types:', error);
+      },
+    });
+  }
+
+  private loadCategories(): void {
+    this.categoriesService.getCategories().subscribe({
+      next: (categories: Category[]) => {
+        this.categories = categories;
+        this.propertyCategories = categories as any; // For backward compatibility
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+      },
+    });
   }
 
   ngAfterViewInit(): void {
@@ -123,10 +210,174 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.propertyForm.valid) {
-      console.log(this.propertyForm.value);
+      const formValue = this.propertyForm.value;
+
+      // Process amenities data
+      const selectedAmenities = this.getSelectedAmenities(formValue);
+      const amenitiesForAPI: PropertyAmenity[] = selectedAmenities.map((a) => ({
+        id: a.id,
+        distance: '',
+      }));
+
+      // Convert images to base64
+      const imagesBase64 = await this.convertFilesToBase64(this.uploadedFiles);
+
+      const propertyData: CreatePropertyRequest = {
+        name_en: formValue.propertyName,
+        name_ar: formValue.propertyNameAr,
+        description_en: formValue.description,
+        description_ar: formValue.descriptionAr,
+        property_category_id:
+          this.getCategoryIdBySlug(formValue.propertyCategory) || 0,
+        property_type_id: Number(formValue.propertyType),
+        area: Number(formValue.propertySize),
+        available_from: formValue.availableFrom,
+        furnishing_status: formValue.furnishment,
+        bedrooms: Number(formValue.bedrooms),
+        bathrooms: Number(formValue.bathrooms),
+        floor_number: Number(formValue.floorNumber),
+        total_floors: Number(formValue.totalFloors),
+        insurance_amount: Number(formValue.depositAmount),
+        fal_number: formValue.falLicenseId,
+        ad_number: formValue.advertisingLicenseNo,
+        annual_rent: Number(formValue.annualRent),
+        building_number: formValue.buildingName,
+        country: formValue.country,
+        region: formValue.region,
+        city: formValue.city,
+        district: formValue.district,
+        postal_code: formValue.postalCode,
+        latitude: Number(formValue.latitude),
+        longitude: Number(formValue.longitude),
+        is_active: true,
+        amenities: amenitiesForAPI,
+        images: imagesBase64,
+        primary_image_index: 0,
+      };
+
+      this.propertyCreationService.createProperty(propertyData).subscribe({
+        next: () => {
+          this.router.navigate(['/agent/properties']);
+        },
+        error: () => {
+          // Handle error UI if needed
+        },
+      });
     }
+  }
+
+  private getSelectedAmenities(formValue: any): Amenity[] {
+    const selectedAmenities: Amenity[] = [];
+
+    Object.keys(formValue).forEach((key) => {
+      if (key.startsWith('amenity_') && formValue[key] === true) {
+        const amenityId = parseInt(key.replace('amenity_', ''));
+        const amenity = this.amenities.find((a) => a.id === amenityId);
+        if (amenity) {
+          selectedAmenities.push(amenity);
+        }
+      }
+    });
+
+    return selectedAmenities;
+  }
+
+  getAmenityIconClass(icon: string): string {
+    // Map icon names to FontAwesome classes
+    const iconMap: { [key: string]: string } = {
+      'swimming-pool': 'fas fa-swimming-pool',
+      dumbbell: 'fas fa-dumbbell',
+      parking: 'fas fa-parking',
+      'shield-alt': 'fas fa-shield-alt',
+      elevator: 'fas fa-elevator',
+      tree: 'fas fa-tree',
+      home: 'fas fa-home',
+      couch: 'fas fa-couch',
+      snowflake: 'fas fa-snowflake',
+      'temperature-high': 'fas fa-temperature-high',
+      wifi: 'fas fa-wifi',
+      paw: 'fas fa-paw',
+      wheelchair: 'fas fa-wheelchair',
+      tshirt: 'fas fa-tshirt',
+      tools: 'fas fa-tools',
+    };
+
+    return iconMap[icon] || `fas fa-${icon}`;
+  }
+
+  getAmenityName(amenity: Amenity): string {
+    const currentLang = this.languageService.translate.currentLang;
+    return currentLang === 'ar' ? amenity.name_ar : amenity.name_en;
+  }
+
+  getPropertyTypeName(propertyType: PropertyType): string {
+    const currentLang = this.languageService.translate.currentLang;
+    return currentLang === 'ar' ? propertyType.name_ar : propertyType.name_en;
+  }
+
+  getPropertyTypesByCategory(categorySlug: string): PropertyType[] {
+    if (!categorySlug || categorySlug === '') {
+      return [];
+    }
+
+    // Try exact match first
+    let filteredTypes = this.propertyTypes.filter(
+      (type) => type.category.slug === categorySlug
+    );
+
+    // If no results, try case-insensitive match
+    if (filteredTypes.length === 0) {
+      filteredTypes = this.propertyTypes.filter(
+        (type) =>
+          type.category.slug.toLowerCase() === categorySlug.toLowerCase()
+      );
+    }
+
+    // If still no results, try matching by category name
+    if (filteredTypes.length === 0) {
+      filteredTypes = this.propertyTypes.filter(
+        (type) =>
+          type.category.name_en.toLowerCase() === categorySlug.toLowerCase() ||
+          type.category.name_ar === categorySlug
+      );
+    }
+
+    return filteredTypes;
+  }
+
+  getCategoryName(category: PropertyCategory | Category): string {
+    const currentLang = this.languageService.translate.currentLang;
+    return currentLang === 'ar' ? category.name_ar : category.name_en;
+  }
+
+  onCategoryChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    const selectedCategory = select.value;
+
+    // Reset property type when category changes
+    this.propertyForm.patchValue({ propertyType: '' });
+  }
+
+  private getCategoryIdBySlug(slug: string): number | null {
+    const category = this.categories.find(
+      (c) => c.slug.toLowerCase() === (slug || '').toLowerCase()
+    );
+    return category ? category.id : null;
+  }
+
+  private convertFilesToBase64(files: File[]): Promise<string[]> {
+    const promises = files.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve((reader.result as string) || '');
+          reader.onerror = (e) => reject(e);
+          reader.readAsDataURL(file);
+        })
+    );
+    return Promise.all(promises);
   }
 
   onCancel(): void {
@@ -134,7 +385,7 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
   }
 
   onSaveDraft(): void {
-    console.log('Saving as draft:', this.propertyForm.value);
+    // Save as draft functionality
   }
 
   onFileSelected(event: Event): void {
