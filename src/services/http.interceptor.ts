@@ -57,6 +57,10 @@ export class HttpInterceptorService implements HttpInterceptor {
     // Handle the request and catch errors
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        // For validation errors (422), pass through the original error object
+        if (error.status === 422) {
+          return throwError(() => error);
+        }
         return this.handleError(error);
       })
     );
@@ -112,9 +116,7 @@ export class HttpInterceptorService implements HttpInterceptor {
         case 404:
           errorMessage = 'Not Found - Resource not available';
           break;
-        case 422:
-          errorMessage = 'Validation Error - Please check your input';
-          break;
+
         case 500:
           errorMessage = 'Server Error - Please try again later';
           break;
