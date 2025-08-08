@@ -347,3 +347,62 @@ section {
 textarea {
   font-family: inherit;
 }
+
+// Amenities Distance Section Styling
+.selected-amenities-distance {
+  margin-top: 24px;
+  padding: 30px;
+  border-top: 1px solid #f1f1f4;
+
+  h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #404040;
+    margin-bottom: 24px;
+    line-height: 16px;
+    padding: 0;
+  }
+
+  .distance-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    .distance-input-group {
+      width: 100%;
+
+      .input-group {
+        display: flex;
+        gap: 7px;
+        flex-direction: column;
+        width: 100%;
+
+        label {
+          font-size: 14px;
+          line-height: 14px;
+          color: #404040;
+          font-weight: normal;
+        }
+
+        input {
+          background: #fafafa;
+          border: 1px solid rgba(64, 64, 64, 0.2);
+          border-radius: 6px;
+          height: 40px;
+          padding-inline: 12px;
+          font-size: 14px;
+          width: 100%;
+
+          &::placeholder {
+            color: #40404066;
+          }
+
+          &:focus {
+            outline: none;
+            border-color: #0311d0;
+          }
+        }
+      }
+    }
+  }
+}

@@ -134,6 +134,10 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
         `amenity_${amenity.id}`,
         this.fb.control(false)
       );
+      this.propertyForm.addControl(
+        `amenity_distance_${amenity.id}`,
+        this.fb.control('')
+      );
     });
   }
 
@@ -216,10 +220,6 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
 
       // Process amenities data
       const selectedAmenities = this.getSelectedAmenities(formValue);
-      const amenitiesForAPI: PropertyAmenity[] = selectedAmenities.map((a) => ({
-        id: a.id,
-        distance: '',
-      }));
 
       // Convert images to base64
       const imagesBase64 = await this.convertFilesToBase64(this.uploadedFiles);
@@ -252,32 +252,41 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
         latitude: Number(formValue.latitude),
         longitude: Number(formValue.longitude),
         is_active: true,
-        amenities: amenitiesForAPI,
+        amenities: selectedAmenities,
         images: imagesBase64,
         primary_image_index: 0,
       };
 
       this.propertyCreationService.createProperty(propertyData).subscribe({
-        next: () => {
+        next: (response) => {
+          console.log(response);
           this.router.navigate(['/agent/properties']);
         },
-        error: () => {
+        error: (error) => {
+          console.log(error);
           // Handle error UI if needed
         },
       });
     }
   }
 
-  private getSelectedAmenities(formValue: any): Amenity[] {
-    const selectedAmenities: Amenity[] = [];
+  private getSelectedAmenities(formValue: any): PropertyAmenity[] {
+    const selectedAmenities: PropertyAmenity[] = [];
 
     Object.keys(formValue).forEach((key) => {
-      if (key.startsWith('amenity_') && formValue[key] === true) {
+      if (
+        key.startsWith('amenity_') &&
+        !key.includes('distance') &&
+        formValue[key] === true
+      ) {
         const amenityId = parseInt(key.replace('amenity_', ''));
-        const amenity = this.amenities.find((a) => a.id === amenityId);
-        if (amenity) {
-          selectedAmenities.push(amenity);
-        }
+        const distanceKey = `amenity_distance_${amenityId}`;
+        const distance = formValue[distanceKey] || '';
+
+        selectedAmenities.push({
+          id: amenityId,
+          distance: distance,
+        });
       }
     });
 
@@ -358,6 +367,47 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
 
     // Reset property type when category changes
     this.propertyForm.patchValue({ propertyType: '' });
+  }
+
+  onAmenityChange(amenityId: number, event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    const distanceControlName = `amenity_distance_${amenityId}`;
+
+    if (!checkbox.checked) {
+      // Clear distance when amenity is unchecked
+      this.propertyForm.patchValue({ [distanceControlName]: '' });
+    }
+  }
+
+  hasSelectedAmenities(): boolean {
+    const formValue = this.propertyForm.value;
+    return Object.keys(formValue).some(
+      (key) =>
+        key.startsWith('amenity_') &&
+        !key.includes('distance') &&
+        formValue[key] === true
+    );
+  }
+
+  getSelectedAmenitiesForDisplay(): Amenity[] {
+    const formValue = this.propertyForm.value;
+    const selectedAmenities: Amenity[] = [];
+
+    Object.keys(formValue).forEach((key) => {
+      if (
+        key.startsWith('amenity_') &&
+        !key.includes('distance') &&
+        formValue[key] === true
+      ) {
+        const amenityId = parseInt(key.replace('amenity_', ''));
+        const amenity = this.amenities.find((a) => a.id === amenityId);
+        if (amenity) {
+          selectedAmenities.push(amenity);
+        }
+      }
+    });
+
+    return selectedAmenities;
   }
 
   private getCategoryIdBySlug(slug: string): number | null {

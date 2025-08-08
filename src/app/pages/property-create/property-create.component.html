@@ -389,12 +389,33 @@
           type="checkbox"
           [formControlName]="'amenity_' + amenity.id"
           class="hidden-checkbox"
+          (change)="onAmenityChange(amenity.id, $event)"
         />
         <span class="button-content">
           <i [class]="getAmenityIconClass(amenity.icon)"></i>
           {{ getAmenityName(amenity) }}
         </span>
       </label>
+    </div>
+
+    <!-- Distance Inputs for Selected Amenities -->
+    <div class="selected-amenities-distance" *ngIf="hasSelectedAmenities()">
+      <h4>{{ "Add Distance or Notes for Selected Features" | translate }}</h4>
+      <div class="distance-inputs">
+        <div
+          class="distance-input-group"
+          *ngFor="let amenity of getSelectedAmenitiesForDisplay()"
+        >
+          <div class="input-group">
+            <label>{{ getAmenityName(amenity) }}</label>
+            <input
+              type="text"
+              [formControlName]="'amenity_distance_' + amenity.id"
+              placeholder="{{ 'Distance or notes' | translate }}"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
