@@ -273,8 +273,12 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
       this.propertyCreationService.createProperty(propertyData).subscribe({
         next: (response) => {
           console.log(response);
-          this.toastService.show('Property submitted successfully!');
-          this.router.navigate(['/agent/properties']);
+          this.toastService.show('Property created successfully!');
+
+          // Add a small delay before navigation to ensure toast is visible
+          setTimeout(() => {
+            this.router.navigate(['/agent/properties']);
+          }, 1500);
         },
         error: (error) => {
           console.log(error);
