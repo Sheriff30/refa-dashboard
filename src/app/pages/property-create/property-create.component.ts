@@ -29,6 +29,7 @@ import {
   CreatePropertyRequest,
   PropertyAmenity,
 } from '../../../services/property-creation.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-property-create',
@@ -48,6 +49,8 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
   propertyTypes: PropertyType[] = [];
   propertyCategories: PropertyCategory[] = [];
   categories: Category[] = [];
+  backendErrors: any = {};
+  submitted = false;
 
   constructor(
     private fb: FormBuilder,
@@ -57,46 +60,47 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
     private languageService: LanguageService,
     private propertyTypesService: PropertyTypesService,
     private categoriesService: CategoriesService,
-    private propertyCreationService: PropertyCreationService
+    private propertyCreationService: PropertyCreationService,
+    private toastService: ToastService
   ) {
     this.propertyForm = this.fb.group({
       // Names
-      propertyName: ['', Validators.required],
-      propertyNameAr: ['', Validators.required],
+      propertyName: ['test', Validators.required],
+      propertyNameAr: ['test', Validators.required],
       // Category/Type
       propertyCategory: ['', Validators.required],
       propertyType: ['', Validators.required],
       // Area & availability & furnishing
-      propertySize: ['', [Validators.required, Validators.min(0)]],
+      propertySize: ['123', [Validators.required, Validators.min(0)]],
       availableFrom: ['', Validators.required],
       furnishment: ['', Validators.required],
       // Beds/Baths/Floors
-      bedrooms: ['', [Validators.required, Validators.min(0)]],
-      bathrooms: ['', [Validators.required, Validators.min(0)]],
-      floorNumber: ['', [Validators.required, Validators.min(0)]],
-      totalFloors: ['', [Validators.required, Validators.min(0)]],
+      bedrooms: ['123', [Validators.required, Validators.min(0)]],
+      bathrooms: ['123', [Validators.required, Validators.min(0)]],
+      floorNumber: ['1234', [Validators.required, Validators.min(0)]],
+      totalFloors: ['123', [Validators.required, Validators.min(0)]],
       // Pricing
-      annualRent: ['', [Validators.required, Validators.min(0)]],
-      depositAmount: ['', [Validators.required, Validators.min(0)]],
+      annualRent: ['123', [Validators.required, Validators.min(0)]],
+      depositAmount: ['123', [Validators.required, Validators.min(0)]],
       // Descriptions
-      description: ['', Validators.required],
-      descriptionAr: ['', Validators.required],
+      description: ['test', Validators.required],
+      descriptionAr: ['test', Validators.required],
       // Address/Location
-      addressLine1: ['', Validators.required],
-      buildingName: ['', Validators.required],
+      addressLine1: ['test', Validators.required],
+      buildingName: ['test', Validators.required],
       country: ['Saudi Arabia', Validators.required],
-      region: ['', Validators.required],
-      city: ['', Validators.required],
-      district: ['', Validators.required],
-      postalCode: ['', Validators.required],
+      region: ['test', Validators.required],
+      city: ['test', Validators.required],
+      district: ['test', Validators.required],
+      postalCode: ['test', Validators.required],
       latitude: [this.defaultLat, Validators.required],
       longitude: [this.defaultLng, Validators.required],
       // Media
       images: [''],
       // Legal
-      falLicenseId: ['', Validators.required],
-      advertisingLicenseNo: ['', Validators.required],
-      declaration: [false, Validators.requiredTrue],
+      falLicenseId: ['123', Validators.required],
+      advertisingLicenseNo: ['123', Validators.required],
+      declaration: [true, Validators.requiredTrue],
     });
   }
 
@@ -105,6 +109,9 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
     this.loadAmenities();
     this.loadPropertyTypes();
     this.loadCategories();
+
+    // Listen to form value changes to clear backend errors
+    this.setupFormValueChangeListener();
   }
 
   private loadAmenities(): void {
@@ -215,6 +222,12 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
   }
 
   async onSubmit(): Promise<void> {
+    this.submitted = true;
+    this.backendErrors = {};
+
+    // Mark all fields as touched to show validation errors
+    this.markFormGroupTouched(this.propertyForm);
+
     if (this.propertyForm.valid) {
       const formValue = this.propertyForm.value;
 
@@ -260,13 +273,23 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
       this.propertyCreationService.createProperty(propertyData).subscribe({
         next: (response) => {
           console.log(response);
+          this.toastService.show('Property submitted successfully!');
           this.router.navigate(['/agent/properties']);
         },
         error: (error) => {
           console.log(error);
-          // Handle error UI if needed
+          this.handleBackendErrors(error);
+          // Scroll to first error after handling backend errors
+          setTimeout(() => {
+            this.scrollToFirstError();
+          }, 100);
         },
       });
+    } else {
+      // Scroll to first error for form validation errors
+      setTimeout(() => {
+        this.scrollToFirstError();
+      }, 100);
     }
   }
 
@@ -469,5 +492,223 @@ export class PropertyCreateComponent implements OnInit, AfterViewInit {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  private markFormGroupTouched(formGroup: FormGroup): void {
+    Object.keys(formGroup.controls).forEach((key) => {
+      const control = formGroup.get(key);
+      control?.markAsTouched();
+
+      if (control instanceof FormGroup) {
+        this.markFormGroupTouched(control);
+      }
+    });
+  }
+
+  private handleBackendErrors(error: any): void {
+    if (error?.error?.errors) {
+      // Handle validation errors from backend
+      this.backendErrors = this.mapBackendErrorsToFormFields(
+        error.error.errors
+      );
+    } else if (error?.error?.message) {
+      // Handle general error message
+      this.backendErrors = { general: [error.error.message] };
+    } else {
+      // Handle unknown errors
+      this.backendErrors = {
+        general: ['An unexpected error occurred. Please try again.'],
+      };
+    }
+  }
+
+  private mapBackendErrorsToFormFields(backendErrors: any): any {
+    const fieldMapping: { [key: string]: string } = {
+      name_en: 'propertyName',
+      name_ar: 'propertyNameAr',
+      description_en: 'description',
+      description_ar: 'descriptionAr',
+      property_category_id: 'propertyCategory',
+      property_type_id: 'propertyType',
+      area: 'propertySize',
+      available_from: 'availableFrom',
+      furnishing_status: 'furnishment',
+      bedrooms: 'bedrooms',
+      bathrooms: 'bathrooms',
+      floor_number: 'floorNumber',
+      total_floors: 'totalFloors',
+      insurance_amount: 'depositAmount',
+      fal_number: 'falLicenseId',
+      ad_number: 'advertisingLicenseNo',
+      annual_rent: 'annualRent',
+      building_number: 'buildingName',
+      country: 'country',
+      region: 'region',
+      city: 'city',
+      district: 'district',
+      postal_code: 'postalCode',
+      latitude: 'latitude',
+      longitude: 'longitude',
+    };
+
+    const mappedErrors: any = {};
+
+    Object.keys(backendErrors).forEach((backendField) => {
+      const formField = fieldMapping[backendField] || backendField;
+      mappedErrors[formField] = backendErrors[backendField];
+    });
+
+    return mappedErrors;
+  }
+
+  getBackendError(fieldName: string): string | null {
+    if (
+      this.backendErrors[fieldName] &&
+      this.backendErrors[fieldName].length > 0
+    ) {
+      return this.backendErrors[fieldName][0];
+    }
+    return null;
+  }
+
+  hasFieldError(fieldName: string): boolean {
+    const control = this.propertyForm.get(fieldName);
+    const hasFormError =
+      control?.invalid &&
+      (control?.dirty || control?.touched || this.submitted);
+    const hasBackendError = this.getBackendError(fieldName) !== null;
+    return hasFormError || hasBackendError;
+  }
+
+  getFieldErrorMessage(fieldName: string): string {
+    const control = this.propertyForm.get(fieldName);
+
+    // Check backend errors first
+    const backendError = this.getBackendError(fieldName);
+    if (backendError) {
+      return backendError;
+    }
+
+    // Check form validation errors
+    if (
+      control?.errors &&
+      (control?.dirty || control?.touched || this.submitted)
+    ) {
+      if (control.errors['required']) {
+        return this.getRequiredErrorMessage(fieldName);
+      }
+      if (control.errors['min']) {
+        return `${fieldName} must be greater than or equal to ${control.errors['min'].min}`;
+      }
+      // Add more validation error types as needed
+    }
+
+    return '';
+  }
+
+  private getRequiredErrorMessage(fieldName: string): string {
+    const errorMessages: { [key: string]: string } = {
+      propertyName: 'Property name is required',
+      propertyNameAr: 'Property name (Arabic) is required',
+      propertyCategory: 'Property category is required',
+      propertyType: 'Property type is required',
+      propertySize: 'Property size is required',
+      availableFrom: 'Available date is required',
+      furnishment: 'Furnishment is required',
+      bedrooms: 'Number of bedrooms is required',
+      bathrooms: 'Number of bathrooms is required',
+      floorNumber: 'Floor number is required',
+      totalFloors: 'Total floors is required',
+      annualRent: 'Annual rent is required',
+      depositAmount: 'Deposit amount is required',
+      description: 'Property description is required',
+      descriptionAr: 'Property description (Arabic) is required',
+      addressLine1: 'Address is required',
+      buildingName: 'Building name is required',
+      region: 'Region is required',
+      city: 'City is required',
+      district: 'District is required',
+      postalCode: 'Postal code is required',
+      falLicenseId: 'FAL License ID is required',
+      advertisingLicenseNo: 'Advertising License No is required',
+      declaration: 'You must accept the declaration',
+    };
+
+    return errorMessages[fieldName] || `${fieldName} is required`;
+  }
+
+  private scrollToFirstError(): void {
+    // Find the first field with an error
+    const errorField = this.findFirstErrorField();
+
+    if (errorField) {
+      // Scroll to the error field with smooth animation
+      errorField.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+
+      // Add a brief focus to highlight the field
+      setTimeout(() => {
+        errorField.focus();
+      }, 500);
+    }
+  }
+
+  private findFirstErrorField(): HTMLElement | null {
+    // Check form validation errors first
+    const formControls = this.propertyForm.controls;
+    for (const fieldName in formControls) {
+      const control = formControls[fieldName];
+      if (
+        control.invalid &&
+        (control.dirty || control.touched || this.submitted)
+      ) {
+        const element = this.getFieldElement(fieldName);
+        if (element) return element;
+      }
+    }
+
+    // Check backend errors
+    for (const fieldName in this.backendErrors) {
+      if (fieldName !== 'general' && this.backendErrors[fieldName]) {
+        const element = this.getFieldElement(fieldName);
+        if (element) return element;
+      }
+    }
+
+    return null;
+  }
+
+  private getFieldElement(fieldName: string): HTMLElement | null {
+    // Try different selectors to find the field element
+    const selectors = [
+      `[formControlName="${fieldName}"]`,
+      `[name="${fieldName}"]`,
+      `#${fieldName}`,
+      `[id="${fieldName}"]`,
+    ];
+
+    for (const selector of selectors) {
+      const element = document.querySelector(selector) as HTMLElement;
+      if (element) return element;
+    }
+
+    return null;
+  }
+
+  private setupFormValueChangeListener(): void {
+    // Listen to value changes on all form controls
+    Object.keys(this.propertyForm.controls).forEach((fieldName) => {
+      const control = this.propertyForm.get(fieldName);
+      if (control) {
+        control.valueChanges.subscribe(() => {
+          // Clear backend error for this field when user starts typing
+          if (this.backendErrors[fieldName]) {
+            delete this.backendErrors[fieldName];
+          }
+        });
+      }
+    });
   }
 }

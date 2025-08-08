@@ -5,6 +5,13 @@
 />
 
 <form [formGroup]="propertyForm" (ngSubmit)="onSubmit()">
+  <!-- General Backend Errors -->
+  <div class="general-errors" *ngIf="backendErrors?.general">
+    <div class="error-message" *ngFor="let error of backendErrors.general">
+      {{ error | translate }}
+    </div>
+  </div>
+
   <!-- Basic Information -->
   <section>
     <h3>{{ "Basic Information" | translate }}</h3>
@@ -16,10 +23,8 @@
           type="text"
           placeholder="{{ 'Enter property name in English' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('propertyName')?.errors?.['required'] && propertyForm.get('propertyName')?.touched"
-        >
-          {{ "Property name is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('propertyName')">
+          {{ getFieldErrorMessage("propertyName") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -29,10 +34,8 @@
           type="text"
           placeholder="{{ 'Enter property name in Arabic' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('propertyNameAr')?.errors?.['required'] && propertyForm.get('propertyNameAr')?.touched"
-        >
-          {{ "Property name (Arabic) is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('propertyNameAr')">
+          {{ getFieldErrorMessage("propertyNameAr") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -49,10 +52,8 @@
             {{ getCategoryName(category) }}
           </option>
         </select>
-        <div
-          *ngIf="propertyForm.get('propertyCategory')?.errors?.['required'] && propertyForm.get('propertyCategory')?.touched"
-        >
-          {{ "Property category is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('propertyCategory')">
+          {{ getFieldErrorMessage("propertyCategory") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -70,10 +71,8 @@
             {{ getPropertyTypeName(propertyType) }}
           </option>
         </select>
-        <div
-          *ngIf="propertyForm.get('propertyType')?.errors?.['required'] && propertyForm.get('propertyType')?.touched"
-        >
-          {{ "Property type is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('propertyType')">
+          {{ getFieldErrorMessage("propertyType") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -83,10 +82,8 @@
           type="number"
           placeholder="{{ 'Enter property size' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('propertySize')?.errors?.['required'] && propertyForm.get('propertySize')?.touched"
-        >
-          {{ "Property size is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('propertySize')">
+          {{ getFieldErrorMessage("propertySize") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -96,10 +93,8 @@
           type="date"
           placeholder="{{ 'Select available date' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('availableFrom')?.errors?.['required'] && propertyForm.get('availableFrom')?.touched"
-        >
-          {{ "Available date is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('availableFrom')">
+          {{ getFieldErrorMessage("availableFrom") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -112,10 +107,8 @@
             {{ "Semi-furnished" | translate }}
           </option>
         </select>
-        <div
-          *ngIf="propertyForm.get('furnishment')?.errors?.['required'] && propertyForm.get('furnishment')?.touched"
-        >
-          {{ "Furnishment is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('furnishment')">
+          {{ getFieldErrorMessage("furnishment") | translate }}
         </div>
       </div>
     </div>
@@ -133,10 +126,8 @@
           type="number"
           placeholder="{{ 'Enter number of bedrooms' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('bedrooms')?.errors?.['required'] && propertyForm.get('bedrooms')?.touched"
-        >
-          {{ "Number of bedrooms is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('bedrooms')">
+          {{ getFieldErrorMessage("bedrooms") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -146,10 +137,8 @@
           type="number"
           placeholder="{{ 'Enter number of bathrooms' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('bathrooms')?.errors?.['required'] && propertyForm.get('bathrooms')?.touched"
-        >
-          {{ "Number of bathrooms is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('bathrooms')">
+          {{ getFieldErrorMessage("bathrooms") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -159,10 +148,8 @@
           type="number"
           placeholder="{{ 'Enter floor number' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('floorNumber')?.errors?.['required'] && propertyForm.get('floorNumber')?.touched"
-        >
-          {{ "Floor number is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('floorNumber')">
+          {{ getFieldErrorMessage("floorNumber") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -172,10 +159,8 @@
           type="number"
           placeholder="{{ 'Enter total number of floors' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('totalFloors')?.errors?.['required'] && propertyForm.get('totalFloors')?.touched"
-        >
-          {{ "Total floors is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('totalFloors')">
+          {{ getFieldErrorMessage("totalFloors") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -185,10 +170,8 @@
           type="number"
           placeholder="{{ 'Enter annual rent amount' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('annualRent')?.errors?.['required'] && propertyForm.get('annualRent')?.touched"
-        >
-          {{ "Annual rent is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('annualRent')">
+          {{ getFieldErrorMessage("annualRent") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -198,10 +181,8 @@
           type="number"
           placeholder="{{ 'Enter deposit amount' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('depositAmount')?.errors?.['required'] && propertyForm.get('depositAmount')?.touched"
-        >
-          {{ "Deposit amount is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('depositAmount')">
+          {{ getFieldErrorMessage("depositAmount") | translate }}
         </div>
       </div>
       <div class="input-group text-area">
@@ -212,10 +193,8 @@
             'Enter property description in English' | translate
           }}"
         ></textarea>
-        <div
-          *ngIf="propertyForm.get('description')?.errors?.['required'] && propertyForm.get('description')?.touched"
-        >
-          {{ "Property description is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('description')">
+          {{ getFieldErrorMessage("description") | translate }}
         </div>
       </div>
       <div class="input-group text-area">
@@ -224,10 +203,8 @@
           formControlName="descriptionAr"
           placeholder="{{ 'Enter property description in Arabic' | translate }}"
         ></textarea>
-        <div
-          *ngIf="propertyForm.get('descriptionAr')?.errors?.['required'] && propertyForm.get('descriptionAr')?.touched"
-        >
-          {{ "Property description (Arabic) is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('descriptionAr')">
+          {{ getFieldErrorMessage("descriptionAr") | translate }}
         </div>
       </div>
     </div>
@@ -244,10 +221,8 @@
           type="text"
           placeholder="{{ 'Enter address line 1' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('addressLine1')?.errors?.['required'] && propertyForm.get('addressLine1')?.touched"
-        >
-          {{ "Address is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('addressLine1')">
+          {{ getFieldErrorMessage("addressLine1") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -257,10 +232,8 @@
           type="text"
           placeholder="{{ 'Enter building number or name' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('buildingName')?.errors?.['required'] && propertyForm.get('buildingName')?.touched"
-        >
-          {{ "Building name is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('buildingName')">
+          {{ getFieldErrorMessage("buildingName") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -278,6 +251,9 @@
           type="text"
           placeholder="{{ 'Enter region' | translate }}"
         />
+        <div class="error-message" *ngIf="hasFieldError('region')">
+          {{ getFieldErrorMessage("region") | translate }}
+        </div>
       </div>
       <div class="input-group">
         <label>{{ "City" | translate }}</label>
@@ -286,6 +262,9 @@
           type="text"
           placeholder="{{ 'Enter city' | translate }}"
         />
+        <div class="error-message" *ngIf="hasFieldError('city')">
+          {{ getFieldErrorMessage("city") | translate }}
+        </div>
       </div>
       <div class="input-group">
         <label>{{ "District" | translate }}</label>
@@ -294,6 +273,9 @@
           type="text"
           placeholder="{{ 'Enter district' | translate }}"
         />
+        <div class="error-message" *ngIf="hasFieldError('district')">
+          {{ getFieldErrorMessage("district") | translate }}
+        </div>
       </div>
       <div class="input-group">
         <label>{{ "Postal Code" | translate }}</label>
@@ -302,10 +284,8 @@
           type="text"
           placeholder="{{ 'Enter postal code' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('postalCode')?.errors?.['required'] && propertyForm.get('postalCode')?.touched"
-        >
-          {{ "Postal code is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('postalCode')">
+          {{ getFieldErrorMessage("postalCode") | translate }}
         </div>
       </div>
       <div class="map-container">
@@ -430,10 +410,8 @@
           type="text"
           placeholder="{{ 'Enter FAL license ID' | translate }}"
         />
-        <div
-          *ngIf="propertyForm.get('falLicenseId')?.errors?.['required'] && propertyForm.get('falLicenseId')?.touched"
-        >
-          {{ "FAL License ID is required" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('falLicenseId')">
+          {{ getFieldErrorMessage("falLicenseId") | translate }}
         </div>
       </div>
       <div class="input-group">
@@ -444,9 +422,10 @@
           placeholder="{{ 'Enter advertising license number' | translate }}"
         />
         <div
-          *ngIf="propertyForm.get('advertisingLicenseNo')?.errors?.['required'] && propertyForm.get('advertisingLicenseNo')?.touched"
+          class="error-message"
+          *ngIf="hasFieldError('advertisingLicenseNo')"
         >
-          {{ "Advertising License No is required" | translate }}
+          {{ getFieldErrorMessage("advertisingLicenseNo") | translate }}
         </div>
       </div>
       <div class="confirmation-checkbox">
@@ -457,11 +436,8 @@
               | translate
           }}
         </label>
-        <div
-          class="error-message"
-          *ngIf="propertyForm.get('declaration')?.errors?.['required'] && propertyForm.get('declaration')?.touched"
-        >
-          {{ "You must accept the declaration" | translate }}
+        <div class="error-message" *ngIf="hasFieldError('declaration')">
+          {{ getFieldErrorMessage("declaration") | translate }}
         </div>
       </div>
       <!-- Action Buttons -->
@@ -472,7 +448,7 @@
         <button type="button" (click)="onSaveDraft()">
           {{ "Save as Draft" | translate }}
         </button>
-        <button type="submit" [disabled]="!propertyForm.valid">
+        <button type="submit">
           {{ "Submit Property" | translate }}
         </button>
       </div>

@@ -135,6 +135,14 @@ export class PropertyCreationService {
    * @returns Observable that throws the error
    */
   private handleError = (error: HttpErrorResponse): Observable<never> => {
+    console.error('Property Creation Service Error:', error);
+
+    // For validation errors (422), preserve the original error structure
+    if (error.status === 422 || error.status === 400) {
+      return throwError(() => error);
+    }
+
+    // For other errors, create a formatted error message
     let errorMessage = 'An error occurred while creating the property';
 
     if (error.error instanceof ErrorEvent) {
@@ -143,17 +151,11 @@ export class PropertyCreationService {
     } else {
       // Server-side error
       switch (error.status) {
-        case 400:
-          errorMessage = this.formatValidationErrors(error.error);
-          break;
         case 401:
           errorMessage = 'Unauthenticated. Please log in again.';
           break;
         case 403:
           errorMessage = 'Forbidden. Agent access required.';
-          break;
-        case 422:
-          errorMessage = this.formatValidationErrors(error.error);
           break;
         case 500:
           errorMessage = 'Server error. Please try again later.';
@@ -163,7 +165,6 @@ export class PropertyCreationService {
       }
     }
 
-    console.error('Property Creation Service Error:', error);
     return throwError(() => new Error(errorMessage));
   };
 
