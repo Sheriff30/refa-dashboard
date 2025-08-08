@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -48,9 +44,8 @@ export class AmenitiesService {
     }
 
     const url = `${this.baseUrl}/agent/amenities`;
-    const headers = this.getAuthHeaders();
 
-    return this.http.get<AmenitiesResponse>(url, { headers }).pipe(
+    return this.http.get<AmenitiesResponse>(url).pipe(
       map((response) => {
         this.amenitiesCache = response.data;
         this.cacheExpiry = Date.now() + this.CACHE_DURATION;
@@ -123,24 +118,6 @@ export class AmenitiesService {
   clearCache(): void {
     this.amenitiesCache = [];
     this.cacheExpiry = 0;
-  }
-
-  /**
-   * Get authentication headers for API requests
-   * @returns HttpHeaders with authentication token
-   */
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    });
-
-    if (token) {
-      return headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    return headers;
   }
 
   /**

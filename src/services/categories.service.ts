@@ -1,9 +1,5 @@
 import { Injectable } from '@angular/core';
-import {
-  HttpClient,
-  HttpErrorResponse,
-  HttpHeaders,
-} from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 
@@ -47,9 +43,8 @@ export class CategoriesService {
     }
 
     const url = `${this.baseUrl}/agent/categories`;
-    const headers = this.getAuthHeaders();
 
-    return this.http.get<CategoriesResponse>(url, { headers }).pipe(
+    return this.http.get<CategoriesResponse>(url).pipe(
       map((response) => {
         this.categoriesCache = response.data;
         this.cacheExpiry = Date.now() + this.CACHE_DURATION;
@@ -158,24 +153,6 @@ export class CategoriesService {
   clearCache(): void {
     this.categoriesCache = [];
     this.cacheExpiry = 0;
-  }
-
-  /**
-   * Get authentication headers for API requests
-   * @returns HttpHeaders with authentication token
-   */
-  private getAuthHeaders(): HttpHeaders {
-    const token = localStorage.getItem('access_token');
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    });
-
-    if (token) {
-      return headers.set('Authorization', `Bearer ${token}`);
-    }
-
-    return headers;
   }
 
   /**
