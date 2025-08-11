@@ -7,6 +7,7 @@ import {
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { UserRoleService } from './user-role.service';
+import { environment } from '../environments/environment';
 
 // Interfaces for type safety
 export interface AgentRegistrationRequest {
@@ -71,7 +72,7 @@ export interface UnauthenticatedResponse {
   providedIn: 'root',
 })
 export class AgentService {
-  private readonly baseUrl = 'http://dev.refa.sa:8000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(
     private http: HttpClient,

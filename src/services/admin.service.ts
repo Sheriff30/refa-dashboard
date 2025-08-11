@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { UserRoleService } from './user-role.service';
+import { environment } from '../environments/environment';
 
 // Interfaces
 export interface AdminLoginRequest {
@@ -47,7 +48,7 @@ export interface AdminUnauthenticatedResponse {
   providedIn: 'root',
 })
 export class AdminService {
-  private baseUrl = 'http://dev.refa.sa:8000/api';
+  private baseUrl = environment.apiBaseUrl;
 
   constructor(
     private http: HttpClient,

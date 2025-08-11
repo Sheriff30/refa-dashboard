@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 // Interfaces for type safety
 export interface PropertyAmenity {
@@ -87,7 +88,7 @@ export interface PropertyCreationError {
   providedIn: 'root',
 })
 export class PropertyCreationService {
-  private readonly baseUrl = 'http://dev.refa.sa:8000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 

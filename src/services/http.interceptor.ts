@@ -8,6 +8,7 @@ import {
 } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 @Injectable()
 export class HttpInterceptorService implements HttpInterceptor {
@@ -18,7 +19,7 @@ export class HttpInterceptorService implements HttpInterceptor {
     next: HttpHandler
   ): Observable<HttpEvent<unknown>> {
     // Only intercept API calls to our backend
-    if (!request.url.includes('dev.refa.sa:8000/api')) {
+    if (!request.url.includes(environment.apiBaseUrl)) {
       return next.handle(request);
     }
 

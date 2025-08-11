@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, of } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
+import { environment } from '../environments/environment';
 
 // Interfaces for type safety
 export interface Category {
@@ -25,7 +26,7 @@ export interface CategoriesError {
   providedIn: 'root',
 })
 export class CategoriesService {
-  private readonly baseUrl = 'http://dev.refa.sa:8000/api';
+  private readonly baseUrl = environment.apiBaseUrl;
   private categoriesCache: Category[] = [];
   private cacheExpiry: number = 0;
   private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
