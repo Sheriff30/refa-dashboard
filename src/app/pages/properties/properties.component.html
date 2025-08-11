@@ -8,7 +8,7 @@
         type="text"
         [placeholder]="'Search properties' | translate"
         [(ngModel)]="searchTerm"
-        (input)="currentPage = 1"
+        (input)="onSearchChange()"
       />
     </div>
 
@@ -22,18 +22,22 @@
     </button>
   </div>
 
+  <!-- Loading state -->
+  <div class="table-loading" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p>{{ "Loading properties..." | translate }}</p>
+    </div>
+  </div>
+
   <!-- No data -->
-  <div class="table-no-data" *ngIf="filteredProperties.length === 0">
+  <div class="table-no-data" *ngIf="!isLoading && properties.length === 0">
     {{ "No data found" | translate }}
   </div>
 
   <!-- properties -->
-  <div class="table-properties">
-    <div
-      *ngFor="let item of paginatedProperties"
-      class="property-item"
-      dir="ltr"
-    >
+  <div class="table-properties" *ngIf="!isLoading">
+    <div *ngFor="let item of properties" class="property-item" dir="ltr">
       <div class="property-actions">
         <span class="action-icon" (click)="deleteProperty(item.id)">
           <img src="/assets/icons/delete-icon.svg" alt="delete icon" />
@@ -48,14 +52,14 @@
       </div>
       <div class="property-details">
         <div class="property-image">
-          <img [src]="item.cardImage" alt="property image" />
+          <img [src]="item.primary_image_url" alt="property image" />
         </div>
         <div class="property-info">
           <div class="property-info--title">
-            <div class="property-title">{{ item.title }}</div>
+            <div class="property-title">{{ item.name_en }}</div>
             <div class="property-address">
               <img src="/assets/icons/property-location.svg" alt="" />
-              <div>{{ item.address.street }}, {{ item.address.city }}</div>
+              <div>{{ item.city }}, {{ item.district }}</div>
             </div>
           </div>
 
@@ -71,7 +75,7 @@
             <div class="property-date">
               <img src="/assets/icons/date-icon.svg" alt="" />
               <div>
-                {{ item.property_details.posted_date }}
+                {{ item.available_from | date }}
               </div>
             </div>
           </div>
@@ -81,11 +85,11 @@
   </div>
 
   <!-- Table pagination -->
-  <div class="table-pagination" *ngIf="filteredProperties.length > 0">
+  <div class="table-pagination" *ngIf="!isLoading && properties.length > 0">
     <div class="table-pagination--show">
       <span> {{ "Show" | translate }} </span>
       <select [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
-        <option [value]="10">10</option>
+        <option [value]="15">15</option>
         <option [value]="20">20</option>
         <option [value]="30">30</option>
       </select>
@@ -95,23 +99,33 @@
     <div class="table-pagination--pages">
       <div class="table-pagination--pages--count">
         {{ (currentPage - 1) * itemsPerPage + 1 }}-{{
-          Math.min(currentPage * itemsPerPage, filteredProperties.length)
+          Math.min(currentPage * itemsPerPage, totalItems)
         }}
 
         {{ "of" | translate }}
 
-        {{ filteredProperties.length }}
+        {{ totalItems }}
       </div>
 
       <div class="table-pagination--pages--buttons" dir="ltr">
         <button (click)="prevPage()" [disabled]="currentPage === 1">
           <img src="/assets/icons/arrow-left.svg" alt="prev icon" />
         </button>
-        <span>{{ currentPage }}</span>
-        <button
-          (click)="nextPage()"
-          [disabled]="currentPage * itemsPerPage >= filteredProperties.length"
-        >
+
+        <!-- Page numbers -->
+        <div class="page-numbers">
+          <span
+            *ngFor="let page of getPageNumbers()"
+            class="page-number"
+            [class.active]="page === currentPage"
+            (click)="goToPage(page)"
+            [class.clickable]="page !== currentPage"
+          >
+            {{ page }}
+          </span>
+        </div>
+
+        <button (click)="nextPage()" [disabled]="currentPage >= lastPage">
           <img src="/assets/icons/arrow-right.svg" alt="next icon" />
         </button>
       </div>

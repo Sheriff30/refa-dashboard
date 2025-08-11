@@ -8,12 +8,11 @@
     <div class="property-details">
       <div class="property-info">
         <div class="property-title-location">
-          <span class="property-title">{{ property.title }}</span>
+          <span class="property-title">{{ property.name_en }}</span>
+          <span class="property-id">ID: {{ property.id }}</span>
           <span class="property-location">
             <img src="/assets/icons/property-location.svg" alt="" />
-            <span>
-              {{ property.address.district }}, {{ property.address.city }}
-            </span>
+            <span> {{ property.district }}, {{ property.city }} </span>
           </span>
         </div>
 
@@ -25,7 +24,7 @@
           <span class="property-date">
             <img src="/assets/icons/date-icon.svg" alt="date-icon" />
             {{ "Posted on" | translate }}
-            {{ property.property_details.posted_date }}
+            {{ property.created_at | date }}
           </span>
         </div>
       </div>
@@ -33,21 +32,20 @@
       <div class="property-includes">
         <div class="property-includes-item">
           <img src="/assets/icons/bed.svg" alt="bed icon" />
-          {{ property.property_details.bathrooms }} {{ "Bed" | translate }}
+          {{ property.bathrooms }} {{ "Bed" | translate }}
         </div>
         <div class="property-includes-item">
           <img src="/assets/icons/bath.svg" alt="bath icon" />
-          {{ property.property_details.bathrooms }} {{ "Bath" | translate }}
+          {{ property.bathrooms }} {{ "Bath" | translate }}
         </div>
         <div class="property-includes-item">
           <img src="/assets/icons/location.svg" alt="location icon" />
-          {{ property.property_details.area.value }}
-          {{ property.property_details.area.unit | translate }}
+          {{ property?.area }} {{ "m²" | translate }}
         </div>
         <div class="property-includes-item">
           <img src="/assets/icons/parking.svg" alt="" />
           {{
-            property.property_details.parking
+            property.parking
               ? ("Parking" | translate)
               : ("No Parking" | translate)
           }}
@@ -62,8 +60,8 @@
               "Deposit Amount" | translate
             }}</span>
             <span class="deposit-value">
-              {{ property.deposit_amount.value | number }}
-              {{ property.deposit_amount.currency | translate }}
+              {{ property.annual_rent | number }}
+              {{ "SAR" | translate }}
             </span>
           </div>
         </div>
@@ -72,7 +70,7 @@
           <div>
             <span class="license-label">{{ "Adv. License" | translate }}</span>
             <span class="license-value">
-              {{ property.license.adv_license }}
+              {{ property.ad_number }}
             </span>
           </div>
         </div>
@@ -83,7 +81,7 @@
               "FAL License ID" | translate
             }}</span>
             <span class="license-value">
-              {{ property.license.fal_license_id }}
+              {{ property.fal_number }}
             </span>
           </div>
         </div>
@@ -94,7 +92,7 @@
               "Available From" | translate
             }}</span>
             <span class="availability-value">
-              {{ property.property_details.available_from }}
+              {{ property.available_from }}
             </span>
           </div>
         </div>
@@ -102,23 +100,25 @@
     </div>
 
     <!-- property images -->
-    <div *ngIf="property.images?.length" class="property-images">
-      <div *ngFor="let image of property.images" class="property-image">
-        <img [src]="image" [alt]="property.title + ' image'" />
+    <div class="property-images">
+      <div *ngIf="property.images?.length" class="images-grid">
+        <div *ngFor="let image of property.images" class="property-image">
+          <img [src]="image" [alt]="property.name_en + ' image'" />
+        </div>
+      </div>
+      <div *ngIf="!property.images?.length" class="no-images">
+        <p>No images provided</p>
       </div>
     </div>
 
     <!-- property map -->
     <div class="property-map">
       <h3>{{ "Location" | translate }}</h3>
-      <app-map
-        [lat]="property.location.latitude"
-        [lng]="property.location.longitude"
-      ></app-map>
+      <app-map [lat]="property.latitude" [lng]="property.longitude"></app-map>
     </div>
 
     <!-- owner details -->
-    <div class="property-owner-details">
+    <!-- <div class="property-owner-details">
       <h3>{{ "Owner Details" | translate }}</h3>
       <div class="owner-name property-owner-item">
         <span class="owner-name-label">{{ "Name" | translate }}</span>
@@ -148,6 +148,6 @@
           {{ property.owner_details.address.region }}
         </span>
       </div>
-    </div>
+    </div> -->
   </div>
 </div>

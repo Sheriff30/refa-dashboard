@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://dev.refa.sa:8000/api',
+  apiBaseUrl: 'https://dev.refa.sa/api',
   appName: 'REFA Dashboard',
-  version: '1.0.0'
+  version: '1.0.0',
 };
