@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { environment } from '../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ConfigService {
-  
   /**
    * Get the API base URL
    */
@@ -41,7 +40,9 @@ export class ConfigService {
    */
   getApiUrl(endpoint: string): string {
     // Remove leading slash if present to avoid double slashes
-    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const cleanEndpoint = endpoint.startsWith('/')
+      ? endpoint.slice(1)
+      : endpoint;
     return `${this.apiBaseUrl}/${cleanEndpoint}`;
   }
 
